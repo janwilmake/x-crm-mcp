@@ -2,7 +2,7 @@
 /// <reference lib="esnext" />
 
 import { DurableObject } from "cloudflare:workers";
-import { withSimplerAuth } from "simplerauth-client";
+import { withSimplerAuth, UserContext } from "simplerauth-client";
 import { withMcp } from "with-mcp";
 //@ts-ignore
 import openapi from "./openapi.json";
@@ -14,6 +14,7 @@ export interface Env {
 
 // User's CRM data storage
 export class CrmDurableObject extends DurableObject<Env> {
+  sql: SqlStorage;
   constructor(state: DurableObjectState, env: Env) {
     super(state, env);
     this.sql = state.storage.sql;
@@ -40,12 +41,12 @@ export class CrmDurableObject extends DurableObject<Env> {
     `);
   }
 
-  async syncFollows(accessToken: string, userId: string) {
+  async syncFollows(username: string) {
     await this.initSchema();
 
     // Get user's follows from Twitter API
     const followsResponse = await fetch(
-      `https://api.twitterapi.io/twitter/user/followings?userName=${userId}`,
+      `https://api.twitterapi.io/twitter/user/followings?userName=${username}`,
       {
         headers: {
           "X-API-Key": this.env.TWITTER_API_KEY,
@@ -88,7 +89,7 @@ export class CrmDurableObject extends DurableObject<Env> {
     let cursor = followsData.next_cursor;
     while (cursor && followsData.has_next_page) {
       const nextResponse = await fetch(
-        `https://api.twitterapi.io/twitter/user/followings?userName=${userId}&cursor=${cursor}`,
+        `https://api.twitterapi.io/twitter/user/followings?userName=${username}&cursor=${cursor}`,
         {
           headers: {
             "X-API-Key": this.env.TWITTER_API_KEY,
@@ -155,7 +156,7 @@ export class CrmDurableObject extends DurableObject<Env> {
 export default {
   fetch: withMcp(
     withSimplerAuth(
-      async (request: Request, env: Env, ctx: any) => {
+      async (request: Request, env: Env, ctx: UserContext) => {
         const url = new URL(request.url);
 
         // Ensure required env vars
@@ -171,22 +172,19 @@ export default {
             throw new Error("User not authenticated");
           }
           return env.CRMDURABLEOBJECT.get(
-            env.CRMDURABLEOBJECT.idFromString(ctx.user.id)
+            env.CRMDURABLEOBJECT.idFromName(ctx.user.id)
           );
         };
 
         // Sync follows endpoint
-        if (url.pathname === "/sync" && request.method === "POST") {
+        if (url.pathname === "/sync") {
           if (!ctx.authenticated) {
             return new Response("Authentication required", { status: 401 });
           }
 
           try {
             const userDO = getUserDO();
-            const result = await userDO.syncFollows(
-              ctx.accessToken,
-              ctx.user.username
-            );
+            const result = await userDO.syncFollows(ctx.user?.username);
 
             return new Response(JSON.stringify(result), {
               headers: { "Content-Type": "application/json" },
@@ -209,8 +207,8 @@ export default {
             const userDO = getUserDO();
             const follows = await userDO.getFollows();
 
-            return new Response(JSON.stringify({ follows }), {
-              headers: { "Content-Type": "application/json" },
+            return new Response(JSON.stringify({ follows }, undefined, 2), {
+              headers: { "Content-Type": "application/json;charset=utf8" },
             });
           } catch (error) {
             return new Response(JSON.stringify({ error: error.message }), {
@@ -271,7 +269,6 @@ export default {
           );
         }
 
-        // Home page
         return new Response(
           `
           <html>
@@ -282,12 +279,15 @@ export default {
                 ctx.authenticated
                   ? `
                 <p>Welcome, ${ctx.user.name}!</p>
-                <p><a href="/sync" onclick="fetch('/sync', {method: 'POST'}).then(r => r.json()).then(console.log)">Sync Follows</a></p>
+
                 <p><a href="/logout">Logout</a></p>
+                <p><a href="/sync">Sync again</a></p>
+                <p><a href="/follows">Get Follows</a></p>
                 <p>MCP endpoint: <code>${url.origin}/mcp</code></p>
+               
               `
                   : `
-                <p><a href="/authorize">Login with X</a></p>
+                <p><a href="/authorize?redirect_to=/sync">Login with X</a></p>
               `
               }
             </body>
@@ -298,11 +298,7 @@ export default {
           }
         );
       },
-      {
-        isLoginRequired: false,
-        scope: "tweet.read users.read follows.read",
-        authEndpoint: "/me",
-      }
+      { isLoginRequired: false }
     ),
     openapi,
     {
