@@ -3,5 +3,12 @@
   "name": "grok-tools-crm",
   "compatibility_date": "2025-08-20",
   "assets": { "directory": "./" },
-  "route": { "custom_domain": true, "pattern": "crm.grok-tools.com" }
+  "route": { "custom_domain": true, "pattern": "crm.grok-tools.com" },
+  "observability": { "logs": { "enabled": true } },
+  "durable_objects": {
+    "bindings": [
+      { "name": "CRMDURABLEOBJECT", "class_name": "CrmDurableObject" }
+    ]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["CrmDurableObject"] }]
 }

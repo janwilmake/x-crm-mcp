@@ -5,10 +5,10 @@
   - user details
   - note
 - make that accessible over MCP as one large context with 2 tools
-  - get follows
-  - set note
+  - getFollows()
+  - setNote(username,note)
 
-Flow:
+Target Flow enabled by this:
 
 1. get all follows and their public details and some info
 2. use with deep research to find more info on them online, such as personal blog, GitHub, insta, etc
@@ -17,4 +17,13 @@ Flow:
 
 Context:
 
-- simplerauth using x oauth provider
+- simplerauth using x oauth provider (login.wilmake.com) https://uithub.com/janwilmake/universal-mcp-oauth/tree/main/simplerauth-client/README.md
+- twitter api https://uithub.com/janwilmake/twitterapi-openapi/blob/main/openapi.json
+- flaredream https://flaredream.com/system-ts.md
+- with-mcp: https://uithub.com/janwilmake/with-mcp
+
+Implementation:
+
+- After X login of a user, fetches all follows using twitterapi, stores it in users own durable object.
+- Exposes endpoints `GET /follows` and `POST /note/{username}?note={note}` and expose those through tools using an openapi and `withMcp`
+- NB: withSimplerAuth is wrapped within the withMcp handler
