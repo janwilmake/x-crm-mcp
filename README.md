@@ -27,3 +27,8 @@ Implementation:
 - After X login of a user, fetches all follows using twitterapi, stores it in users own durable object.
 - Exposes endpoints `GET /follows` and `POST /note/{username}?note={note}` and expose those through tools using an openapi and `withMcp`
 - NB: withSimplerAuth is wrapped within the withMcp handler
+- add column `tags` into the table
+- allow getFollows(tag?:string) to filter on a tag
+- allow setNote to also update tags (must be comma separated) (call it `updateContact`)
+- in the markdown, put unique tags at the top
+- add a html version (renders at index) that renders all follows in a table, with ability to click a tag to navigate to ?tag={tag} to filter on this.

@@ -2,15 +2,26 @@
   "openapi": "3.0.1",
   "info": {
     "title": "X CRM MCP API",
-    "description": "API for managing X follows with notes",
+    "description": "API for managing X follows with notes and tags",
     "version": "1.0.0"
   },
   "paths": {
     "/follows": {
       "get": {
         "operationId": "getFollows",
-        "summary": "Get all follows with their details and notes",
-        "description": "Returns a comprehensive list of all people you follow on X, including their profile information and any notes you've added",
+        "summary": "Get all follows with their details, notes and tags",
+        "description": "Returns a comprehensive list of all people you follow on X, including their profile information, notes, and tags. Can be filtered by tag.",
+        "parameters": [
+          {
+            "name": "tag",
+            "in": "query",
+            "required": false,
+            "description": "Filter follows by tag",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "List of follows",
@@ -24,8 +35,21 @@
                       "items": {
                         "$ref": "#/components/schemas/Follow"
                       }
+                    },
+                    "uniqueTags": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "List of all unique tags"
                     }
                   }
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "description": "Markdown formatted list of follows with tags at the top"
                 }
               }
             }
@@ -36,11 +60,11 @@
         }
       }
     },
-    "/note/{username}": {
+    "/contact/{username}": {
       "post": {
-        "operationId": "setNote",
-        "summary": "Set or update a note for a followed user",
-        "description": "Add or update a personal note about someone you follow",
+        "operationId": "updateContact",
+        "summary": "Update note and/or tags for a followed user",
+        "description": "Add or update a personal note and tags about someone you follow. Tags should be comma-separated.",
         "parameters": [
           {
             "name": "username",
@@ -54,8 +78,17 @@
           {
             "name": "note",
             "in": "query",
-            "required": true,
+            "required": false,
             "description": "The note to add or update",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tags",
+            "in": "query",
+            "required": false,
+            "description": "Comma-separated tags to add or update",
             "schema": {
               "type": "string"
             }
@@ -63,7 +96,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Note updated successfully",
+            "description": "Contact updated successfully",
             "content": {
               "application/json": {
                 "schema": {
@@ -71,6 +104,9 @@
                   "properties": {
                     "updated": {
                       "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
                     }
                   }
                 }
@@ -79,6 +115,114 @@
           },
           "400": {
             "description": "Bad request"
+          },
+          "401": {
+            "description": "Authentication required"
+          }
+        }
+      }
+    },
+    "/contacts/bulk": {
+      "post": {
+        "operationId": "updateBulk",
+        "summary": "Update multiple contacts with notes and tags in a single operation",
+        "description": "Bulk update tags and optionally notes for multiple followed users. Each update must specify username and tags, with note being optional.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "updates": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/BulkUpdate"
+                    },
+                    "description": "Array of updates to apply"
+                  }
+                },
+                "required": ["updates"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bulk update completed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "integer",
+                      "description": "Number of successfully updated contacts"
+                    },
+                    "errors": {
+                      "type": "integer",
+                      "description": "Number of failed updates"
+                    },
+                    "errorDetails": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "Details of any errors that occurred"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Authentication required"
+          }
+        }
+      }
+    },
+    "/tags/{tag}": {
+      "delete": {
+        "operationId": "removeTag",
+        "summary": "Remove a specific tag from all follows",
+        "description": "Carefully removes a specific tag from all followed users who have it. The tag removal is case-insensitive and preserves other tags.",
+        "parameters": [
+          {
+            "name": "tag",
+            "in": "path",
+            "required": true,
+            "description": "The tag to remove from all follows",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tag removal completed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "removed": {
+                      "type": "integer",
+                      "description": "Number of follows updated (had the tag removed)"
+                    },
+                    "tag": {
+                      "type": "string",
+                      "description": "The tag that was removed"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - tag required"
           },
           "401": {
             "description": "Authentication required"
@@ -140,11 +284,33 @@
             "type": "string",
             "description": "Your personal note about this person"
           },
+          "tags": {
+            "type": "string",
+            "description": "Comma-separated tags for this person"
+          },
           "synced_at": {
             "type": "string",
             "description": "When this data was last synced"
           }
         }
+      },
+      "BulkUpdate": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "The X username (without @)"
+          },
+          "tags": {
+            "type": "string",
+            "description": "Comma-separated tags to set for this user"
+          },
+          "note": {
+            "type": "string",
+            "description": "Optional note to set for this user"
+          }
+        },
+        "required": ["username", "tags"]
       }
     }
   }
