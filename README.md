@@ -1,6 +1,6 @@
 # X CRM MCP
 
-[![Install X CRM](https://img.shields.io/badge/Install-X%20CRM-black?style=for-the-badge)](https://installthismcp.com/X%20CRM?url=https%3A%2F%2Fcrm.grok-tools.com%2Fmcp)
+[![Install X CRM](https://img.shields.io/badge/Install_MCP-X%20CRM-black?style=for-the-badge)](https://installthismcp.com/X%20CRM?url=https%3A%2F%2Fcrm.grok-tools.com%2Fmcp)
 
 ![](demo.png)
 
