@@ -5,6 +5,8 @@ import { DurableObject } from "cloudflare:workers";
 import { withSimplerAuth, UserContext } from "simplerauth-client";
 import { withMcp } from "with-mcp";
 //@ts-ignore
+import html from "./homepage.html";
+//@ts-ignore
 import openapi from "./openapi.json";
 
 export interface Env {
@@ -785,25 +787,10 @@ export default {
           }
         }
 
-        // Default landing page for non-authenticated users
-        return new Response(
-          `
-          <html>
-            <head><title>X CRM MCP</title></head>
-            <body>
-              <h1>X CRM MCP Server</h1>
-              ${
-                ctx.authenticated
-                  ? `<p><a href="/">View Dashboard</a></p>`
-                  : `<p><a href="/authorize">Login with X</a></p>`
-              }
-            </body>
-          </html>
-        `,
-          {
-            headers: { "Content-Type": "text/html;charset=utf8" },
-          }
-        );
+        // Read the homepage.html file
+        return new Response(html, {
+          headers: { "Content-Type": "text/html;charset=utf8" },
+        });
       },
       { isLoginRequired: false }
     ),

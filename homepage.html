@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>X CRM - Understand Your Network With AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'x-black': '#000000',
+                        'x-blue': '#1DA1F2',
+                        'x-dark-gray': '#15202B',
+                        'x-gray': '#657786',
+                        'x-light-gray': '#AAB8C2',
+                        'x-white': '#FFFFFF'
+                    },
+                    animation: {
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                        'float': 'float 6s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        glow: {
+                            '0%': { boxShadow: '0 0 20px rgba(29, 161, 242, 0.3)' },
+                            '100%': { boxShadow: '0 0 40px rgba(29, 161, 242, 0.6)' }
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-10px)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #000000 0%, #15202B 100%);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .shine {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 50%, rgba(255, 255, 255, 0.1) 100%);
+            background-size: 200% 200%;
+            animation: shine 3s ease-in-out infinite;
+        }
+
+        @keyframes shine {
+            0% {
+                background-position: -200% -200%;
+            }
+
+            50% {
+                background-position: 200% 200%;
+            }
+
+            100% {
+                background-position: -200% -200%;
+            }
+        }
+
+        .text-gradient {
+            background: linear-gradient(135deg, #FFFFFF 0%, #1DA1F2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .button-hover {
+            transition: all 0.3s ease;
+        }
+
+        .button-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(29, 161, 242, 0.3);
+        }
+    </style>
+</head>
+
+<body class="gradient-bg min-h-screen flex items-center justify-center font-sans antialiased overflow-hidden">
+    <div class="container mx-auto px-6 text-center">
+        <!-- Logo/Brand -->
+        <div class="mb-8 animate-float">
+            <div class="inline-flex items-center justify-center w-20 h-20 glass-card rounded-2xl shine animate-glow">
+                <svg class="w-10 h-10 text-x-blue" fill="currentColor" viewBox="0 0 24 24">
+                    <path
+                        d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                </svg>
+            </div>
+        </div>
+
+        <!-- Hero Title -->
+        <h1 class="text-5xl md:text-7xl font-bold mb-6 text-gradient leading-tight">
+            X CRM
+        </h1>
+
+        <!-- Subtitle -->
+        <p class="text-2xl md:text-3xl font-light text-x-light-gray mb-4">
+            Understand Your Network
+        </p>
+        <p class="text-2xl md:text-3xl font-light text-gradient mb-12">
+            With AI
+        </p>
+
+        <!-- Value Proposition -->
+        <div class="max-w-2xl mx-auto mb-12">
+            <p class="text-lg text-x-light-gray leading-relaxed opacity-90">
+                Make your AI understand and manage your X Network
+            </p>
+        </div>
+
+
+        <!-- CTA Button -->
+        <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <a href="/authorize"
+                class="button-hover bg-x-blue hover:bg-blue-600 text-white font-semibold py-4 px-8 rounded-full inline-flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                    <path
+                        d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                </svg>
+                Connect with X
+            </a>
+        </div>
+
+        <!-- Bottom tagline -->
+        <div class="mt-12 opacity-60">
+            <p class="text-x-gray text-sm">
+                Turn your follows into a strategic advantage
+            </p>
+        </div>
+    </div>
+</body>
+
+</html>
